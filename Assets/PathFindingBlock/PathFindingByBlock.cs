@@ -4,33 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using Priority_Queue;
 using UnityEngine;
-
-public class PathFindingNode : FastPriorityQueueNode
-{
-    public PathFindingNode(int index)
-    {
-        nodeIndex = index;
-    }
-
-    public int nodeIndex = 0;
-    public Vector2Int pos;
-    public float g;
-    public float h;
-    public float f => g + h;
-    public bool IsInOpenList;
-    public PathFindingNode parentNode;
-}
-
-public class PathFinding
+public class PathFindingByBlock
 {
     MapInfo _info;
     FastPriorityQueue<PathFindingNode> _openList;
 
     PathFindingNode[,] _nodes;
 
-    public PathFinding(MapInfo info)
+    MapBlocks _blocks;
+
+    public PathFindingByBlock(MapInfo info)
     {
         _info = info;
+        _blocks = new MapBlocks(info);
         _nodes = new PathFindingNode[_info.Width, _info.Height];
         for (int i = 0; i < _info.Width; i++)
         {

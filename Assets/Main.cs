@@ -6,10 +6,18 @@ using System.Linq;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
+public class DebugNode
+{
+    public Vector2Int debugPos;
+    public float debugValue;
+}
+
 public class Main : MonoBehaviour
 {
     MapInfo _mapInfo = new MapInfo();
     PathFinding _pathFinding;
+    List<DebugNode> _lstDebug;
+    List<Vector2Int> _lstDebug1;
 
     List<Vector2Int> pathSize1;
     List<Vector2Int> pathSize2;
@@ -17,7 +25,7 @@ public class Main : MonoBehaviour
 
     void Start()
     {
-        _mapInfo.Init(180, 200, new List<RectInt>(){
+        _mapInfo.Init(200, 200, new List<RectInt>(){
             new RectInt(0, 0, 100, 30),
             new RectInt(50, 40, 40, 40),
             new RectInt(40, 100, 40, 40),
@@ -27,23 +35,41 @@ public class Main : MonoBehaviour
         _pathFinding = new PathFinding(_mapInfo);
         Stopwatch watch = new Stopwatch();
         watch.Start();
-        pathSize1 = _pathFinding.FindPathWithAStar(new Vector2Int(150, 20), new Vector2Int(20, 60), 1);
+        _lstDebug = new List<DebugNode>();
+        _lstDebug1 = new List<Vector2Int>();
+        pathSize1 = _pathFinding.FindPathWithAStar(new Vector2Int(150, 20), new Vector2Int(20, 60), 1, _lstDebug);
         watch.Stop();
         Debug.Log(watch.ElapsedMilliseconds);
 
-        watch.Start();
-        pathSize2 = _pathFinding.FindPathWithAStar(new Vector2Int(150, 20), new Vector2Int(20, 60), 2);
-        watch.Stop();
-        Debug.Log(watch.ElapsedMilliseconds);
+        // watch.Start();
+        // pathSize2 = _pathFinding.FindPathWithAStar(new Vector2Int(1500, 200), new Vector2Int(200, 600), 2);
+        // watch.Stop();
+        // Debug.Log(watch.ElapsedMilliseconds);
 
-        watch.Start();
-        pathSize3 = _pathFinding.FindPathWithAStar(new Vector2Int(150, 20), new Vector2Int(20, 60), 3);
-        watch.Stop();
-        Debug.Log(watch.ElapsedMilliseconds);
+        // watch.Start();
+        // pathSize3 = _pathFinding.FindPathWithAStar(new Vector2Int(1500, 200), new Vector2Int(200, 600), 3);
+        // watch.Stop();
+        // Debug.Log(watch.ElapsedMilliseconds);
         
-        DumpPath(pathSize1);
-        DumpPath(pathSize2);
-        DumpPath(pathSize3);
+        // DumpPath(pathSize1);
+        // DumpPath(pathSize2);
+        // DumpPath(pathSize3);
+
+        StartCoroutine(StartDebug());
+    }
+
+    IEnumerator StartDebug()
+    {
+        if(_lstDebug == null)
+        {
+            yield break;
+        }
+
+        foreach (var item in _lstDebug)
+        {
+            _lstDebug1.Add(item.debugPos);
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 
     private void DumpPath(List<Vector2Int> pathSize3)
@@ -86,8 +112,23 @@ public class Main : MonoBehaviour
         }
 
         DumpPathGraGizoms(pathSize1, Color.red);
+        DumpPathRectGraGizoms(_lstDebug1, Color.green);
         // DumpPathGraGizoms(pathSize2, Color.green);
         // DumpPathGraGizoms(pathSize3, Color.yellow);
+    }
+
+    private void DumpPathRectGraGizoms(List<Vector2Int> pathSize, Color green)
+    {
+        if(pathSize == null) return;
+
+        Gizmos.color = green;
+
+        for(int i = 1; i < pathSize.Count; i++)
+        {
+            Gizmos.DrawCube(GenVec3(pathSize[i-1] + new Vector2(0.5f, 0.5f)), Vector3.one);
+        }
+
+        Gizmos.color = Color.white;
     }
 
     private void DumpPathGraGizoms(List<Vector2Int> pathSize, Color yellow)
