@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 public class Main : MonoBehaviour
 {
@@ -15,18 +17,30 @@ public class Main : MonoBehaviour
 
     void Start()
     {
-        _mapInfo.Init(18, 20, new List<RectInt>(){
-            new RectInt(0, 0, 10, 3),
-            new RectInt(5, 4, 4, 4),
-            new RectInt(4, 10, 4, 4),
-            new RectInt(3, 17, 4, 3),
+        _mapInfo.Init(180, 200, new List<RectInt>(){
+            new RectInt(0, 0, 100, 30),
+            new RectInt(50, 40, 40, 40),
+            new RectInt(40, 100, 40, 40),
+            new RectInt(30, 170, 40, 30),
         });
         
         _pathFinding = new PathFinding(_mapInfo);
-        pathSize1 = _pathFinding.FindPathWithAStar(new Vector2Int(15, 2), new Vector2Int(2, 6), 1);
-        pathSize2 = _pathFinding.FindPathWithAStar(new Vector2Int(15, 2), new Vector2Int(2, 6), 2);
-        pathSize3 = _pathFinding.FindPathWithAStar(new Vector2Int(15, 2), new Vector2Int(2, 6), 3);
+        Stopwatch watch = new Stopwatch();
+        watch.Start();
+        pathSize1 = _pathFinding.FindPathWithAStar(new Vector2Int(150, 20), new Vector2Int(20, 60), 1);
+        watch.Stop();
+        Debug.Log(watch.ElapsedMilliseconds);
 
+        watch.Start();
+        pathSize2 = _pathFinding.FindPathWithAStar(new Vector2Int(150, 20), new Vector2Int(20, 60), 2);
+        watch.Stop();
+        Debug.Log(watch.ElapsedMilliseconds);
+
+        watch.Start();
+        pathSize3 = _pathFinding.FindPathWithAStar(new Vector2Int(150, 20), new Vector2Int(20, 60), 3);
+        watch.Stop();
+        Debug.Log(watch.ElapsedMilliseconds);
+        
         DumpPath(pathSize1);
         DumpPath(pathSize2);
         DumpPath(pathSize3);
@@ -67,13 +81,13 @@ public class Main : MonoBehaviour
                 Gizmos.color = Color.black;
 
                 // 2. 宽度
-                UnityEditor.Handles.Label(pos + Vector3.up * 0.1f, _mapInfo.Grids[i, j].size.ToString());
+                // UnityEditor.Handles.Label(pos + Vector3.up * 0.1f, _mapInfo.Grids[i, j].size.ToString());
             }
         }
 
         DumpPathGraGizoms(pathSize1, Color.red);
-        DumpPathGraGizoms(pathSize2, Color.green);
-        DumpPathGraGizoms(pathSize3, Color.yellow);
+        // DumpPathGraGizoms(pathSize2, Color.green);
+        // DumpPathGraGizoms(pathSize3, Color.yellow);
     }
 
     private void DumpPathGraGizoms(List<Vector2Int> pathSize, Color yellow)

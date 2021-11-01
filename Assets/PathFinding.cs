@@ -2,10 +2,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Priority_Queue;
 using UnityEngine;
 
-public class PathFindingNode
+public class PathFindingNode : FastPriorityQueueNode
 {
+    public PathFindingNode(int index)
+    {
+        nodeIndex = index;
+    }
+
+    public int nodeIndex = 0;
     public Vector2Int pos;
     public float g;
     public float h;
@@ -17,7 +24,7 @@ public class PathFindingNode
 public class PathFinding
 {
     MapInfo _info;
-    List<PathFindingNode> _openList;
+    FastPriorityQueue<PathFindingNode> _openList;
 
     PathFindingNode[,] _nodes;
 
@@ -29,22 +36,23 @@ public class PathFinding
         {
             for (int j = 0; j < _info.Height; j++)
             {
-                _nodes[i, j] = new PathFindingNode();
+                _nodes[i, j] = new PathFindingNode(i * _info.Height + j);
                 _nodes[i, j].pos = new Vector2Int(i, j);
             }
         }
 
-        _openList = new List<PathFindingNode>();
+        _openList = new FastPriorityQueue<PathFindingNode>(_info.Height * _info.Width);
     }
 
     public List<Vector2Int> FindPathWithAStar(Vector2Int from, Vector2Int to, int size)
     {
+        int searchCount = 0;
         _openList.Clear();
         for (int i = 0; i < _info.Width; i++)
         {
             for (int j = 0; j < _info.Height; j++)
             {
-                _nodes[i, j] = new PathFindingNode();
+                _nodes[i, j] = new PathFindingNode(i * _info.Height + j);
                 _nodes[i, j].pos = new Vector2Int(i, j);
             }
         }
@@ -55,15 +63,12 @@ public class PathFinding
 
         while (_openList.Count > 0)
         {
-            var minValue = _openList.Min(m=>m.f);
-            int index = _openList.FindIndex(m=>m.f == minValue);
-
-            var current = _openList[index];
-            _openList.RemoveAt(index);
-            current.IsInOpenList = false;
+            var current = _openList.Dequeue();
+            searchCount++;
 
             if(current.pos == to)
             {
+                Debug.Log("OpenList:" + _openList.Count + " searchCount:"+  searchCount);
                 break;
             }
 
@@ -90,6 +95,8 @@ public class PathFinding
 
             lst.Reverse();
         }
+        
+        Debug.Log("pathSize:" + lst.Count);
 
         return lst;
     }
@@ -100,10 +107,13 @@ public class PathFinding
         pathFindingNode.h = Mathf.Abs(diff.x) + Mathf.Abs(diff.y);
         pathFindingNode.parentNode = parent;
 
-        if(!pathFindingNode.IsInOpenList)
+        if(pathFindingNode.QueueIndex > 0)
         {
-            pathFindingNode.IsInOpenList = true;
-            _openList.Add(pathFindingNode);
+            _openList.UpdatePriority(pathFindingNode, pathFindingNode.f);
+        }
+        else
+        {
+            _openList.Enqueue(pathFindingNode, pathFindingNode.f);
         }
     }
 
